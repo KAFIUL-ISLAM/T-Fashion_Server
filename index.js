@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Running my server');
+    res.send('Welcome to t-fashion server');
 })
 
 
@@ -21,12 +21,20 @@ async function run() {
     try {
         await client.connect();
         const productCollection = client.db("T-Fashion_DB").collection("products");
-
+        
+        // GET
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
+        })
+       
+        // POST
+        app.post('/products', async (req, res) => {
+            const newProduct = req.body;
+            const result = await productCollection.insertOne(newProduct);
+            res.send(result);
         })
         
     }
