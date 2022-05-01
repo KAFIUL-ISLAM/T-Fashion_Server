@@ -19,6 +19,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
+        // Connect to DB
         await client.connect();
         const productCollection = client.db("T-Fashion_DB").collection("products");
         
