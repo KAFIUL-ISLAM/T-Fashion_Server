@@ -29,6 +29,14 @@ async function run() {
             const products = await cursor.toArray();
             res.send(products);
         })
+
+        // GET single item
+        app.get('/service/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const item = await productCollection.findOne(query);
+            res.send(item);
+        })
        
         // POST
         app.post('/products', async (req, res) => {
@@ -37,11 +45,11 @@ async function run() {
             res.send(result);
         })
 
-        // Delete
+        // DELETE
         app.delete('/products/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
-            const result = await serviceCollection.deleteOne(query);
+            const result = await productCollection.deleteOne(query);
             res.send(result);
         })
         
