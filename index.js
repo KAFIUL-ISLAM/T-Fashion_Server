@@ -9,14 +9,28 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 app.use(cors());
 app.use(express.json());
 
+const uri = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster0.ksx2c.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+function verifyJWT(req, res, next) {
+    const token = req.headers.authorization;
+    if (!auth) {
+        return res.status(401).send({ message: 'unauthorized' });
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' })
+        }
+        req.decoded = decoded;
+    })
+
+    next();
+}
+
 app.get('/', (req, res) => {
     res.send('Welcome to t-fashion server');
 })
 
-
-const uri = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster0.ksx2c.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
     try {
@@ -25,14 +39,14 @@ async function run() {
         const productCollection = client.db("T-Fashion_DB").collection("products");
 
         //JWT
-        app.post('/auth', async (req, res) => {
+        app.post('/auth', verifyJWT, async (req, res) => {
             const user = req.body;
             const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN, {
                 expiresIn: '1d'
             });
-            res.send({accessToken});
+            res.send({ accessToken });
         })
-        
+
         // GET
         app.get('/products', async (req, res) => {
             const query = {};
@@ -48,7 +62,7 @@ async function run() {
             const item = await productCollection.findOne(query);
             res.send(item);
         })
-       
+
         // POST
         app.post('/products', async (req, res) => {
             const newProduct = req.body;
@@ -81,16 +95,22 @@ async function run() {
 
         //User Added Items
         app.get('/addedproducts', async (req, res) => {
+            const decodedEmail = req.decoded.email;
             const email = req.query.email;
-            const query = {email};
-            const cursor = productCollection.find(query);
-            const products = await cursor.toArray();
-            res.send(products);
+            if (email === decodedEmail) {
+                const query = { email };
+                const cursor = productCollection.find(query);
+                const products = await cursor.toArray();
+                res.send(products);
+            }
+            else {
+                res.status(403).send({message: 'Forbidden Access'})
+            }
         })
-        
+
     }
     finally {
-        
+
     }
 }
 
