@@ -50,7 +50,6 @@ async function run() {
         app.put('/products/:id', async (req, res) => {
             const id = req.params.id;
             const updatedItem = req.body;
-            console.log(updatedItem);
             const query = { _id: ObjectId(id) };
             const options = { upsert: true };
             const updatedDoc = {
@@ -68,6 +67,15 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await productCollection.deleteOne(query);
             res.send(result);
+        })
+
+        //User Added Items
+        app.get('/products', async (req, res) => {
+            const email = req.query.email;
+            const query = {email};
+            const cursor = productCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
         })
         
     }
