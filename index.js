@@ -70,7 +70,7 @@ async function run() {
         })
 
         //User Added Items
-        app.get('/products', async (req, res) => {
+        app.get('/addedproducts', async (req, res) => {
             const email = req.query.email;
             const query = {email};
             const cursor = productCollection.find(query);
