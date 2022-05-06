@@ -15,7 +15,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 function verifyJWT(req, res, next) {
     const token = req.headers.authorization;
     if (!auth) {
-        return res.status(401).send({ message: 'unauthorized' });
+        return res.status(401).send({ message: 'Unauthorized' });
     }
     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
         if (err) {
