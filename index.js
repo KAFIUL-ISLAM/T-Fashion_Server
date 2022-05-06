@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const app = express();
 const port = process.env.PORT || 5000;
 const cors = require('cors');
@@ -22,6 +23,15 @@ async function run() {
         // Connect to DB
         await client.connect();
         const productCollection = client.db("T-Fashion_DB").collection("products");
+
+        //JWT
+        app.post('/auth', async (req, res) => {
+            const user = req.body;
+            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN, {
+                expiresIn: '1d'
+            });
+            res.send({accessToken});
+        })
         
         // GET
         app.get('/products', async (req, res) => {
