@@ -13,18 +13,20 @@ const uri = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster0.
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 function verifyJWT(req, res, next) {
-    const token = req.headers.authorization;
+    const auth = req.headers.authorization;
+
     if (!auth) {
-        return res.status(401).send({ message: 'Unauthorized' });
+        return res.status(401).send({ message: '401 Unauthorized' });
     }
+    const token = auth.split(' ')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
         if (err) {
-            return res.status(403).send({ message: 'Forbidden access' })
+            return res.status(403).send({ message: '403 Forbidden access' })
         }
         req.decoded = decoded;
+        next();
     })
-
-    next();
+    
 }
 
 app.get('/', (req, res) => {
@@ -39,7 +41,7 @@ async function run() {
         const productCollection = client.db("T-Fashion_DB").collection("products");
 
         //JWT
-        app.post('/auth', verifyJWT, async (req, res) => {
+        app.post('/auth', async (req, res) => {
             const user = req.body;
             const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN, {
                 expiresIn: '1d'
@@ -94,7 +96,7 @@ async function run() {
         })
 
         //User Added Items
-        app.get('/addedproducts', async (req, res) => {
+        app.get('/addedproducts', verifyJWT, async (req, res) => {
             const decodedEmail = req.decoded.email;
             const email = req.query.email;
             if (email === decodedEmail) {
@@ -104,7 +106,7 @@ async function run() {
                 res.send(products);
             }
             else {
-                res.status(403).send({message: 'Forbidden Access'})
+                res.status(403).send({ message: '403 Forbidden Access' })
             }
         })
 
